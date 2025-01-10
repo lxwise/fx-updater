@@ -54,13 +54,13 @@ If an update is detected, a dialog will notify the user, showing the update log 
 
 ### 1.Dependency Installation
 
-You can use Maven to [download](https://repo1.maven.org/maven2/org/update4j/update4j/1.5.9/update4j-1.5.9.jar) or install:
+You can use Maven to [download](https://repo1.maven.org/maven2/io/github/lxwise/fx-updater/) or install:
 
 - Maven:
 
 ```xml
 <dependency>
-    <groupId>com.lxwise</groupId>
+    <groupId>io.github.lxwise</groupId>
     <artifactId>fx-updater</artifactId>
     <version>1.0</version>
 </dependency>
@@ -70,7 +70,7 @@ You can use Maven to [download](https://repo1.maven.org/maven2/org/update4j/upda
 
 ```Groovy
 dependencies {
-    implementation 'com.lxwise:fx-updater:1.0'
+    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0'
 }
 ```
 

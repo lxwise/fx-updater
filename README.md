@@ -50,13 +50,13 @@ ps: 虽然我知道，大部分人和作者菌一样喜欢白嫖，都是看了�
 
 ### 1.依赖安装
 
-您可以使用 Maven [下载](https://repo1.maven.org/maven2/org/update4j/update4j/1.5.9/update4j-1.5.9.jar)或安装：
+您可以使用 Maven [下载](https://repo1.maven.org/maven2/io/github/lxwise/fx-updater/)或安装：
 
 - Maven:
 
 ```xml
 <dependency>
-    <groupId>com.lxwise</groupId>
+    <groupId>io.github.lxwise</groupId>
     <artifactId>fx-updater</artifactId>
     <version>1.0</version>
 </dependency>
@@ -66,7 +66,7 @@ ps: 虽然我知道，大部分人和作者菌一样喜欢白嫖，都是看了�
 
 ```Groovy
 dependencies {
-    implementation 'com.lxwise:fx-updater:1.0'
+    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0'
 }
 ```
 

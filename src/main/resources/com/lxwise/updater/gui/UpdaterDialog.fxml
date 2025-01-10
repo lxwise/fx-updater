@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.web.*?>
+
+<VBox alignment="CENTER" prefHeight="650.0" prefWidth="600.0" spacing="10.0" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.lxwise.updater.gui.UpdaterDialogController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+    </padding>
+
+    <!-- 版本信息标签 -->
+    <Label fx:id="versionInfoLabel" prefHeight="100.0" prefWidth="560.0" wrapText="true">
+        <font>
+            <Font size="12.0"/>
+        </font>
+    </Label>
+
+    <!-- 用于版本更改的 WebView -->
+    <WebView fx:id="versionChangeView" prefHeight="550.0" prefWidth="560.0" VBox.vgrow="ALWAYS"/>
+
+    <HBox alignment="CENTER_RIGHT" spacing="20.0">
+        <Button mnemonicParsing="false" onAction="#ignoreVersionAction" text="%button.ignore" visible="false">
+            <padding>
+                <Insets bottom="5.0" left="20.0" right="20.0" top="5.0"/>
+            </padding>
+        </Button>
+        <Button cancelButton="true" mnemonicParsing="false" onAction="#cancelAction" text="%button.remindLater">
+            <padding>
+                <Insets bottom="5.0" left="20.0" right="20.0" top="5.0"/>
+            </padding>
+        </Button>
+        <Button defaultButton="true" mnemonicParsing="false" onAction="#executeUpdateAction" text="%button.nowUpdate">
+            <padding>
+                <Insets bottom="5.0" left="20.0" right="20.0" top="5.0"/>
+            </padding>
+        </Button>
+    </HBox>
+</VBox>

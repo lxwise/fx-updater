@@ -1,0 +1,45 @@
+{
+  "name": "UpdateTest-FX App",
+  "licenses": "http://192.168.12.50:81/downloads/LICENSE",
+  "changelog": "http://192.168.12.50:81/downloads/changelog.html",
+  "Icon":"http://192.168.12.50:81/downloads/fx-updater.png",
+  "releases": [
+    {
+      "id": "20000",
+      "version": "2.0.0",
+      "releaseDate": "2024-03-07",
+      "licenseVersion": "2",
+      "installationFileInfo": [
+        {
+          "downloadLink": "http://192.168.12.50:81/downloads/UpdateTest-FX-2.0.0.exe",
+          "fileSize": 97677,
+          "platform": "win_x64"
+        },
+        {
+          "downloadLink": "http://192.168.12.50:81/downloads/UpdateTest-FX-1.0.0.dmg",
+          "fileSize": 97677,
+          "platform": "mac"
+        }
+      ]
+    },
+    {
+      "id": "10000",
+      "version": "1.0.0",
+      "releaseDate": "2024-01-05",
+      "licenseVersion": "1",
+      "installationFileInfo": [
+        {
+          "downloadLink": "http://192.168.12.50:81/downloads/UpdateTest-FX-2.0.0.exe",
+          "fileSize": 63995,
+          "platform": "win_x64"
+        },
+        {
+          "downloadLink": "http://192.168.12.50:81/downloads/UpdateTest-FX-1.0.0.dmg",
+          "fileSize": 63995,
+          "platform": "mac"
+        }
+      ]
+    }
+  ]
+}
+

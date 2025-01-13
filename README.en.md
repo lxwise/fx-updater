@@ -20,9 +20,9 @@ FXUpdater is an automatic update launcher for JavaFX applications. It provides a
 
 
 
-[**中文文档**](https://gitee.com/lxwise/iris-blog_parent)
+[**中文文档**](https://github.com/lxwise/fx-updater/blob/master/README.md)
 
-[**English DOC**](https://gitee.com/lxwise/iris-blog_parent/blob/master/README.en.md)
+[**English DOC**](https://github.com/lxwise/fx-updater/blob/master/README.en.md)
 
 ## Overview
 
@@ -62,7 +62,7 @@ You can use Maven to [download](https://repo1.maven.org/maven2/io/github/lxwise/
 <dependency>
     <groupId>io.github.lxwise</groupId>
     <artifactId>fx-updater</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
@@ -70,7 +70,7 @@ You can use Maven to [download](https://repo1.maven.org/maven2/io/github/lxwise/
 
 ```Groovy
 dependencies {
-    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0'
+    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0.1'
 }
 ```
 

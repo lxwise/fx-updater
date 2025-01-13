@@ -20,9 +20,9 @@ FXUpdater是一个JavaFX 应用程序的自动更新启动器。提供了一个�
 
 
 
-[**中文文档**](https://gitee.com/lxwise/iris-blog_parent)
+[**中文文档**](https://github.com/lxwise/fx-updater/blob/master/README.md)
 
-[**English DOC**](https://gitee.com/lxwise/iris-blog_parent/blob/master/README.en.md)
+[**English DOC**](https://github.com/lxwise/fx-updater/blob/master/README.en.md)
 
 ## 概述
 
@@ -58,7 +58,7 @@ ps: 虽然我知道，大部分人和作者菌一样喜欢白嫖，都是看了�
 <dependency>
     <groupId>io.github.lxwise</groupId>
     <artifactId>fx-updater</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
@@ -66,7 +66,7 @@ ps: 虽然我知道，大部分人和作者菌一样喜欢白嫖，都是看了�
 
 ```Groovy
 dependencies {
-    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0'
+    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0.1'
 }
 ```
 

@@ -20,7 +20,7 @@
     </Label>
 
     <!-- 用于版本更改的 WebView -->
-    <WebView fx:id="versionChangeView" prefHeight="550.0" prefWidth="560.0" VBox.vgrow="ALWAYS"/>
+    <TextArea fx:id="textArea" prefHeight="550.0" prefWidth="560.0" VBox.vgrow="ALWAYS" style="-fx-border-color: transparent; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;"/>
 
     <HBox alignment="CENTER_RIGHT" spacing="20.0">
         <Button mnemonicParsing="false" onAction="#ignoreVersionAction" text="%button.ignore" visible="false">

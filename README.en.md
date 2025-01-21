@@ -62,7 +62,7 @@ You can use Maven to [download](https://repo1.maven.org/maven2/io/github/lxwise/
 <dependency>
     <groupId>io.github.lxwise</groupId>
     <artifactId>fx-updater</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 
@@ -70,7 +70,7 @@ You can use Maven to [download](https://repo1.maven.org/maven2/io/github/lxwise/
 
 ```Groovy
 dependencies {
-    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0.1'
+    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0.2'
 }
 ```
 
@@ -116,7 +116,7 @@ Create an `app-update-config` file and host it on a downloadable server like Ngi
 {
     "name": "UpdateTest-FX",
     "licenses": "http://192.168.12.50:81/downloads/LICENSE",
-    "changelog": "http://192.168.12.50:81/downloads/changelog.html",
+    "changelog": "http://192.168.12.50:81/downloads/changelog.txt",
 	"Icon":null,
     "releases": [
       {
@@ -189,32 +189,21 @@ Create an `app-update-config` file and host it on a downloadable server like Ngi
 
 #### 3.3 Update Log File
 
-When updating versions, changes should be accompanied by an explanation. Create a new `changelog.html` file. For an elegant display, an HTML file is used.
+When updating versions, changes should be accompanied by an explanation. Create a new `changelog.txt` file. For an elegant display, an HTML file is used.
 
-`changelog.html` configuration:
+`changelog.txt` configuration:
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Changelog</title>
-</head>
-<body>
-    <h1>Changelog</h1>
-    <h2>Version 2.0.0 (2024-03-07)</h2>
-    <ul>
-        <li>Added support for macOS platform.</li>
-        <li>Improved performance and fixed minor issues.</li>
-        <li>Updated user interface for better usability.</li>
-    </ul>
-    <h2>Version 1.0.0 (2024-01-07)</h2>
-    <ul>
-        <li>Released the initial version of the UpdateTest-FX application.</li>
-        <li>Supported Windows platform.</li>
-    </ul>
-</body>
-</html>
+```txt
+Changelog
+
+Version 2.0.0 (2024-03-07)
+- Added support for macOS platform.
+- Improved performance and fixed minor issues.
+- Updated user interface for better usability.
+
+Version 1.0.0 (2024-01-07)
+- Released the initial version of the UpdateTest-FX application.
+- Supported Windows platform.
 
 ```
 

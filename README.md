@@ -58,7 +58,7 @@ ps: 虽然我知道，大部分人和作者菌一样喜欢白嫖，都是看了�
 <dependency>
     <groupId>io.github.lxwise</groupId>
     <artifactId>fx-updater</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 
@@ -66,7 +66,7 @@ ps: 虽然我知道，大部分人和作者菌一样喜欢白嫖，都是看了�
 
 ```Groovy
 dependencies {
-    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0.1'
+    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0.2'
 }
 ```
 
@@ -112,7 +112,7 @@ app.update.configUrl = http://192.168.12.50:81/downloads/app-update-config.json
 {
     "name": "UpdateTest-FX",
     "licenses": "http://192.168.12.50:81/downloads/LICENSE",
-    "changelog": "http://192.168.12.50:81/downloads/changelog.html",
+    "changelog": "http://192.168.12.50:81/downloads/changelog.txt",
 	"Icon":null,
     "releases": [
       {
@@ -185,32 +185,21 @@ app.update.configUrl = http://192.168.12.50:81/downloads/app-update-config.json
 
 #### 3.3 更新日志文件
 
-版本更新时伴随着改动说明，新建一个`changelog.html`文件,这里为了优雅的展示使用的是html文件。
+版本更新时伴随着改动说明，新建一个`changelog.txt`文件,这里为了优雅的展示使用的是html文件。
 
-`changelog.html`配置如下：
+`changelog.txt`配置如下：
 
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <title>更新日志</title>
-</head>
-<body>
-    <h1>更新日志</h1>
-    <h2>版本 2.0.0 (2024-03-07)</h2>
-    <ul>
-        <li>新增对 macOS 平台的支持。</li>
-        <li>提升性能并修复了一些小问题。</li>
-        <li>更新用户界面，提升易用性。</li>
-    </ul>
-    <h2>版本 1.0.0 (2024-01-07)</h2>
-    <ul>
-        <li>发布 UpdateTest-FX 应用程序的初始版本。</li>
-        <li>支持 Windows 平台。</li>
-    </ul>
-</body>
-</html>
+```txt
+更新日志
+
+版本 2.0.0 (2025-01-07)
+- 新增对 macOS 平台的支持。
+- 提升性能并修复了一些小问题。
+- 更新用户界面，提升易用性。
+
+版本 1.0.0 (2024-01-07)
+- 发布 UpdateTest-FX 应用程序的初始版本。
+- 支持 Windows 平台。
 
 ```
 

@@ -1,6 +1,7 @@
 package com.lxwise.updater.gui;
 
 import com.lxwise.updater.model.ReleaseInfoModel;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -8,11 +9,16 @@ import javafx.fxml.JavaFXBuilderFactory;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -31,7 +37,7 @@ public class UpdaterDialogController {
     @FXML
     public Label versionInfoLabel;
     @FXML
-    public WebView versionChangeView;
+    public TextArea textArea;
 
     private ReleaseInfoModel release;
     private Integer currentReleaseId;
@@ -83,14 +89,14 @@ public class UpdaterDialogController {
     }
 
     private void initialize() {
+
         URL changelog = release.getAppInfo().getChangelog();
         if (changelog != null) {
-            WebEngine engine = versionChangeView.getEngine();
-            String finalURL = String.format("%s?from=%d&to=%d", changelog, currentReleaseId, release.getId());
-            engine.load(finalURL);
+            // 异步加载线上内容并设置到现有的 TextArea
+            loadContentIntoTextArea(changelog.toExternalForm());
         } else {
-            versionChangeView.setVisible(false);
-            versionChangeView.setManaged(false);
+            textArea.setVisible(false);
+            textArea.setManaged(false);
         }
 
         Object[] messageArguments = { release.getAppInfo().getName(), currentVersion, release.getVersion() };
@@ -99,6 +105,30 @@ public class UpdaterDialogController {
         formatter.applyPattern(resources.getString("infotext.freeUpgrade"));
         versionInfoLabel.setText(formatter.format(messageArguments));
         versionInfoLabel.autosize();
+    }
+
+    /**
+     * 异步加载线上内容并设置到现有的
+     * @param url
+     */
+    private void loadContentIntoTextArea(String url) {
+        // 使用后台线程读取线上内容，避免阻塞 UI
+        new Thread(() -> {
+            try (InputStream inputStream = new URL(url).openStream();
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+
+                StringBuilder content = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    content.append(line).append("\n");
+                }
+
+                // 更新 UI 必须在 JavaFX 应用线程中完成
+                Platform.runLater(() -> textArea.setText(content.toString()));
+            } catch (IOException e) {
+                Platform.runLater(() -> textArea.setText("Failed to load content from the URL: " + e.getMessage()));
+            }
+        }).start();
     }
 
     private void close() {

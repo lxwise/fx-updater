@@ -1,6 +1,5 @@
 package com.lxwise.updater.model;
 
-import java.net.URL;
 import java.util.List;
 
 /**
@@ -18,15 +17,15 @@ public class AppInfoModel {
     /**
      * 更新日志
      */
-    private URL changelog;
+    private String changelog;
     /**
      * 许可证
      */
-    private URL licenses;
+    private String licenses;
     /**
      * 应用图标
      */
-    private URL icon;
+    private String icon;
     /**
      * 发布信息
      */
@@ -40,19 +39,19 @@ public class AppInfoModel {
         this.name = name;
     }
 
-    public URL getChangelog() {
+    public String getChangelog() {
         return changelog;
     }
 
-    public void setChangelog(URL changelog) {
+    public void setChangelog(String changelog) {
         this.changelog = changelog;
     }
 
-    public URL getLicenses() {
+    public String getLicenses() {
         return licenses;
     }
 
-    public void setLicenses(URL licenses) {
+    public void setLicenses(String licenses) {
         this.licenses = licenses;
     }
 
@@ -64,11 +63,11 @@ public class AppInfoModel {
         this.releases = releases;
     }
 
-    public URL getIcon() {
+    public String getIcon() {
         return icon;
     }
 
-    public void setIcon(URL icon) {
+    public void setIcon(String icon) {
         this.icon = icon;
     }
 }

@@ -62,7 +62,7 @@ You can use Maven to [download](https://repo1.maven.org/maven2/io/github/lxwise/
 <dependency>
     <groupId>io.github.lxwise</groupId>
     <artifactId>fx-updater</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 </dependency>
 ```
 
@@ -70,7 +70,7 @@ You can use Maven to [download](https://repo1.maven.org/maven2/io/github/lxwise/
 
 ```Groovy
 dependencies {
-    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0.2'
+    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0.3'
 }
 ```
 
@@ -114,16 +114,17 @@ Create an `app-update-config` file and host it on a downloadable server like Ngi
 
 ```json
 {
-    "name": "UpdateTest-FX",
+    "name": "UpdateTest-FX App",
     "licenses": "http://192.168.12.50:81/downloads/LICENSE",
-    "changelog": "http://192.168.12.50:81/downloads/changelog.txt",
-	"Icon":null,
+    "changelog": "http://192.168.12.50:81/downloads/changelog.html",
+    "icon":"http://192.168.12.50:81/downloads/fx-updater.png",
     "releases": [
       {
         "id": "20000",
         "version": "2.0.0",
         "releaseDate": "2024-03-07",
         "licenseVersion": "1",
+        "officialDownloadAddress": "https://www.lstar.icu/",
         "installationFileInfo": [
           {
             "downloadLink": "http://192.168.12.50:81/downloads/UpdateTest-FX-2.0.0.exe",
@@ -147,6 +148,7 @@ Create an `app-update-config` file and host it on a downloadable server like Ngi
         "version": "1.0.0",
         "releaseDate": "2024-01-05",
         "licenseVersion": "1",
+        "officialDownloadAddress": "https://www.lstar.icu/",
         "installationFileInfo": [
           {
             "downloadLink": "http://192.168.12.50:81/downloads/UpdateTest-FX-1.0.0.exe",
@@ -182,6 +184,7 @@ Create an `app-update-config` file and host it on a downloadable server like Ngi
     - `version` Current application version.
     - `releaseDate` Release date, must follow standard formatting.
     - `licenseVersion` Version of the license.
+    - `officialDownloadAddress` Manual download address/official website address. Used as a backup download when automatic download fails.
     - `installationFileInfo` Installation file information; a release version can contain installation files for multiple platforms.
         - `downloadLink`  Download link for the installation file.
         - `fileSize` File size in bytes.
@@ -189,7 +192,7 @@ Create an `app-update-config` file and host it on a downloadable server like Ngi
 
 #### 3.3 Update Log File
 
-When updating versions, changes should be accompanied by an explanation. Create a new `changelog.txt` file. For an elegant display, an HTML file is used.
+When updating versions, changes should be accompanied by an explanation. Create a new `changelog.txt` file. 
 
 `changelog.txt` configuration:
 
@@ -260,6 +263,7 @@ Add a `server` module and create a global cache configuration in the `http` modu
 
     # Download directory
 	location /downloads/ {
+	#if use orther directory please use  alias /opt/myapp/app_updates/;
 		root /var/www/app_updates/;
 		autoindex on;
 		add_header Cache-Control "public, max-age=31536000, immutable";

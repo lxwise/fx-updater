@@ -1,7 +1,6 @@
 package com.lxwise.updater.service;
 
 import javafx.application.Platform;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
@@ -15,15 +14,15 @@ import com.lxwise.updater.gui.UpdaterDialogController;
  * @email: lstart980@gmail.com
  */
 public class FXUpdater {
+
     /**
-     * 更新配置文件地址
+     * 更新配置文件地址（字符串形式）
      */
-    private final URL updateConfigUrl;
+    private final String updateConfigUrl;
     /**
      * 版本号
      */
     private final String version;
-
     /**
      * 发布版本ID
      */
@@ -33,9 +32,9 @@ public class FXUpdater {
      */
     private final Integer licenseVersion;
     /**
-     * 主题样式文件地址
+     * 主题样式文件地址（字符串形式）
      */
-    private final URL themeCssUrl;
+    private final String themeCssUrl;
 
     /**
      * 创建并初始化FXUpdater类的实例。
@@ -55,7 +54,7 @@ public class FXUpdater {
      * @param licenseVersion 版本对应的licence版本号
      * @param themeCssUrl 主题样式文件地址
      */
-    public FXUpdater(URL updateConfigUrl, String version, Integer releaseId, Integer licenseVersion, URL themeCssUrl) {
+    public FXUpdater(String updateConfigUrl, String version, Integer releaseId, Integer licenseVersion, String themeCssUrl) {
         this.updateConfigUrl = updateConfigUrl;
         this.releaseId = releaseId;
         this.version = version;
@@ -69,8 +68,9 @@ public class FXUpdater {
      * @param cssUrl 主题样式文件地址
      * @throws IOException
      */
-    public FXUpdater(Properties properties, URL cssUrl) throws IOException{
-        this(new URL(properties.getProperty("app.update.configUrl")),
+    public FXUpdater(Properties properties, String cssUrl) {
+        this(
+                properties.getProperty("app.update.configUrl"),
                 properties.getProperty("app.update.version"),
                 Integer.valueOf(properties.getProperty("app.update.releaseId")),
                 Integer.valueOf(properties.getProperty("app.update.licenseVersion")),
@@ -97,11 +97,12 @@ public class FXUpdater {
      * @return
      * @throws IOException
      */
-    private static URL loadThemeCss(Class<?> applicationMain) throws IOException  {
-        return applicationMain.getResource("/theme.css");
+    private static String loadThemeCss(Class<?> applicationMain) {
+        URL url = applicationMain.getResource("/theme.css");
+        return url != null ? url.toExternalForm() : null;
     }
 
-    public URL getUpdateConfigUrl() {
+    public String getUpdateConfigUrl() {
         return updateConfigUrl;
     }
 
@@ -117,7 +118,7 @@ public class FXUpdater {
         return licenseVersion;
     }
 
-    public URL getThemeCssUrl() {
+    public String getThemeCssUrl() {
         return themeCssUrl;
     }
 
@@ -125,15 +126,23 @@ public class FXUpdater {
      * 开始检查更新并提示用户安装任务。
      */
     public void checkAppUpdate() {
-        AcquireUpdateConfigService acquireService = new AcquireUpdateConfigService(getUpdateConfigUrl());
-        acquireService.valueProperty().addListener((observable, oldValue, application) -> {
-            CheckUpdateService updateService = new CheckUpdateService(application, getReleaseId(), getLicenseVersion());
-            updateService.valueProperty().addListener((obs, oldVal, release) -> {
-                Platform.runLater(() -> UpdaterDialogController.showUpdateDialog(release, getReleaseId(), getVersion(), getLicenseVersion(), themeCssUrl));
+        try {
+            AcquireUpdateConfigService acquireService = new AcquireUpdateConfigService(new URL(getUpdateConfigUrl()));
+            acquireService.valueProperty().addListener((observable, oldValue, application) -> {
+                CheckUpdateService updateService = new CheckUpdateService(application, getReleaseId(), getLicenseVersion());
+                updateService.valueProperty().addListener((obs, oldVal, release) -> {
+                    Platform.runLater(() ->
+                            UpdaterDialogController.showUpdateDialog(
+                                    release, getReleaseId(), getVersion(), getLicenseVersion(), getThemeCssUrl()
+                            )
+                    );
+                });
+                updateService.start();
             });
-            updateService.start();
-        });
-
-        acquireService.start();
+            acquireService.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+            // 可加日志或弹窗提示
+        }
     }
 }

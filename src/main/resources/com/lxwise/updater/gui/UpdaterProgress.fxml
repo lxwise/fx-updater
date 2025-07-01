@@ -14,10 +14,11 @@
     <Label fx:id="updateInfoLabel" prefWidth="350.0"/>
     <ProgressBar fx:id="updateProgressBar" prefHeight="20.0" prefWidth="350.0" progress="0.0"/>
     <Label fx:id="updateProgressLabel" alignment="CENTER_RIGHT" prefWidth="350.0"/>
-    <Button fx:id="actionButton" cancelButton="true" mnemonicParsing="false" onAction="#executeAction"
-            text="%button.cancel">
-        <VBox.margin>
-            <Insets/>
-        </VBox.margin>
-    </Button>
+    <!-- 按钮区域 -->
+    <HBox spacing="10.0" alignment="CENTER_RIGHT">
+        <Button fx:id="actionButton" cancelButton="true" mnemonicParsing="false" onAction="#executeAction"
+                text="%button.cancel"/>
+        <Button fx:id="manualDownloadButton" mnemonicParsing="false" onAction="#manualDownload"
+                text="%button.manual.download" visible="false"/>
+    </HBox>
 </VBox>

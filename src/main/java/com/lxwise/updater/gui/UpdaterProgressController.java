@@ -10,9 +10,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.JavaFXBuilderFactory;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import java.net.URL;
@@ -39,6 +37,9 @@ public class UpdaterProgressController {
     public Label updateProgressLabel;
     @FXML
     public Button actionButton;
+    @FXML
+    public Button manualDownloadButton;
+
 
     private ReleaseInfoModel release;
     private InstallFileDownloadService downloadService;
@@ -83,10 +84,12 @@ public class UpdaterProgressController {
         actionButton.setOnAction(event -> close());
         actionButton.setText(resources.getString("button.cancel"));
         actionButton.autosize();
+
+        manualDownloadButton.setVisible(true); // 显示手动下载按钮
     }
 
     // 执行更新过程
-    public static void performUpdate(ReleaseInfoModel release, URL themeCssUrl) {
+    public static void performUpdate(ReleaseInfoModel release, String themeCssUrl) {
         try {
             ResourceBundle i18nBundle = ResourceBundle.getBundle("com.lxwise.updater.i18n.updater");
 
@@ -99,7 +102,7 @@ public class UpdaterProgressController {
 
             Scene scene = new Scene(page);
             if (themeCssUrl != null) {
-                scene.getStylesheets().add(themeCssUrl.toExternalForm());
+                scene.getStylesheets().add(themeCssUrl);
             }
 
             Stage stage = new Stage();
@@ -109,6 +112,25 @@ public class UpdaterProgressController {
             stage.show();
             stage.setResizable(false);
             stage.toFront();
+            stage.setOnCloseRequest(event -> {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle(i18nBundle.getString("infotext.title"));
+                alert.setHeaderText(null);
+                alert.setContentText(i18nBundle.getString("alert.confirm.exit"));
+
+                ButtonType ok = new ButtonType(i18nBundle.getString("button.ok"), ButtonBar.ButtonData.OK_DONE);
+                ButtonType cancel = new ButtonType(i18nBundle.getString("button.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
+                alert.getButtonTypes().setAll(ok, cancel);
+
+                alert.initOwner(stage); // 确保在当前窗口上弹出
+                alert.showAndWait().ifPresent(response -> {
+                    if (response == cancel) {
+                        event.consume(); // 取消关闭
+                    }
+                });
+            });
+
+
 
         } catch (Throwable ex) {
             ex.printStackTrace();
@@ -117,8 +139,9 @@ public class UpdaterProgressController {
 
     // 设置窗口图标
     private static void setStageIcon(ReleaseInfoModel release, Stage stage) {
-        if (Objects.nonNull(release.getAppInfo().getIcon())) {
-            stage.getIcons().add(new Image(release.getAppInfo().getIcon().toExternalForm()));
+        String iconStr = release.getAppInfo().getIcon();
+        if (iconStr != null && !iconStr.isBlank()) {
+            stage.getIcons().add(new Image(iconStr));
         } else {
             stage.getIcons().add(new Image("images/fx-updater-logo.png"));
         }
@@ -158,7 +181,6 @@ public class UpdaterProgressController {
 
     @FXML
     public void executeAction(ActionEvent actionEvent) {
-        System.out.println("执行操作");
 
         downloadService.cancel();
         close();
@@ -182,4 +204,20 @@ public class UpdaterProgressController {
 
         installService.start();
     }
+
+    @FXML
+    public void manualDownload(ActionEvent event) {
+        try {
+            String address = release.getOfficialDownloadAddress();
+            if (address != null && !address.isBlank()) {
+                URL downloadUrl = new URL(address);
+                java.awt.Desktop.getDesktop().browse(downloadUrl.toURI());
+            }
+            close();
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+    }
+
 }

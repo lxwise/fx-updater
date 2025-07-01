@@ -8,8 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.JavaFXBuilderFactory;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
@@ -43,7 +42,7 @@ public class UpdaterDialogController {
     private Integer currentReleaseId;
     private String currentVersion;
     private Integer currentLicenseVersion;
-    private URL themeCssUrl;
+    private String themeCssUrl;
 
     /**
      * 显示更新弹窗
@@ -53,7 +52,7 @@ public class UpdaterDialogController {
      * @param licenseVersion
      * @param themeCssUrl
      */
-    public static void showUpdateDialog(ReleaseInfoModel release, Integer releaseId, String version, int licenseVersion, URL themeCssUrl) {
+    public static void showUpdateDialog(ReleaseInfoModel release, Integer releaseId, String version, int licenseVersion, String themeCssUrl) {
         try {
             ResourceBundle i18nBundle = ResourceBundle.getBundle("com.lxwise.updater.i18n.updater");
             FXMLLoader loader = new FXMLLoader(UpdaterDialogController.class.getResource("UpdaterDialog.fxml"), i18nBundle);
@@ -69,19 +68,38 @@ public class UpdaterDialogController {
 
             Scene scene = new Scene(page);
             if (themeCssUrl != null) {
-                scene.getStylesheets().add(themeCssUrl.toExternalForm());
+                scene.getStylesheets().add(themeCssUrl);
             }
 
             final Stage stage = new Stage();
             stage.setScene(scene);
             stage.setTitle(release.getAppInfo().getName()+i18nBundle.getString("infotext.title"));
-            if(Objects.nonNull(release.getAppInfo().getIcon())){
-                stage.getIcons().add(new Image(release.getAppInfo().getIcon().toExternalForm()));
-            }else {
+            String iconStr = release.getAppInfo().getIcon();
+            if (iconStr != null && !iconStr.isBlank()) {
+                stage.getIcons().add(new Image(iconStr));
+            } else {
                 stage.getIcons().add(new Image("images/fx-updater-logo.png"));
             }
             stage.show();
             stage.toFront();
+
+            stage.setOnCloseRequest(event -> {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle(i18nBundle.getString("infotext.title"));
+                alert.setHeaderText(null);
+                alert.setContentText(i18nBundle.getString("alert.confirm.exit"));
+
+                ButtonType ok = new ButtonType(i18nBundle.getString("button.ok"), ButtonBar.ButtonData.OK_DONE);
+                ButtonType cancel = new ButtonType(i18nBundle.getString("button.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
+                alert.getButtonTypes().setAll(ok, cancel);
+
+                alert.initOwner(stage); // 确保在当前窗口上弹出
+                alert.showAndWait().ifPresent(response -> {
+                    if (response == cancel) {
+                        event.consume(); // 取消关闭
+                    }
+                });
+            });
 
         } catch (Throwable ex) {
             ex.printStackTrace();
@@ -90,10 +108,10 @@ public class UpdaterDialogController {
 
     private void initialize() {
 
-        URL changelog = release.getAppInfo().getChangelog();
-        if (changelog != null) {
+        String changelog = release.getAppInfo().getChangelog();
+        if (changelog != null && !changelog.isBlank()) {
             // 异步加载线上内容并设置到现有的 TextArea
-            loadContentIntoTextArea(changelog.toExternalForm());
+            loadContentIntoTextArea(changelog);
         } else {
             textArea.setVisible(false);
             textArea.setManaged(false);

@@ -7,6 +7,7 @@ import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import java.io.BufferedInputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -25,7 +26,6 @@ import java.util.Objects;
 public class InstallFileDownloadService extends Service<Path> {
 
     private final ReleaseInfoModel releaseInfoModel;
-
     /**
      * 构造函数，接收ReleaseInfoModel对象
      *
@@ -53,8 +53,10 @@ public class InstallFileDownloadService extends Service<Path> {
 
 
                 // 获取下载链接并建立连接
-                URL downloadLink = needDownloadFile.getDownloadLink();
-                URLConnection connection = downloadLink.openConnection();
+                String downloadLinkStr = needDownloadFile.getDownloadLink();
+                URL downloadUrl = new URL(downloadLinkStr); // 需要时再转换
+
+                URLConnection connection = downloadUrl.openConnection();
                 connection.connect();
 
                 // 获取文件大小
@@ -128,12 +130,12 @@ public class InstallFileDownloadService extends Service<Path> {
      * @param fileInfo   安装文件信息
      * @return 提取的文件名
      */
-    private String extractFileName(URLConnection connection, InstallationFileInfoModel fileInfo) {
+    private String extractFileName(URLConnection connection, InstallationFileInfoModel fileInfo) throws MalformedURLException {
         String fileName = connection.getHeaderField("Content-Disposition");
         if (fileName != null && fileName.contains("=")) {
             fileName = fileName.split("=")[1].replace("\"", "");
         } else {
-            String urlPath = fileInfo.getDownloadLink().getPath();
+            String urlPath = new URL(fileInfo.getDownloadLink()).getPath();
             fileName = Paths.get(urlPath).getFileName().toString();
         }
 

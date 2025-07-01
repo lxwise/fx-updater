@@ -13,7 +13,7 @@ public class InstallationFileInfoModel {
     /**
      * 下载链接
      */
-    private URL downloadLink;
+    private String downloadLink;
     /**
      * 文件大小
      */
@@ -23,11 +23,11 @@ public class InstallationFileInfoModel {
      */
     private String platform;
 
-    public URL getDownloadLink() {
+    public String getDownloadLink() {
         return downloadLink;
     }
 
-    public void setDownloadLink(URL downloadLink) {
+    public void setDownloadLink(String downloadLink) {
         this.downloadLink = downloadLink;
     }
 

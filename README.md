@@ -58,7 +58,7 @@ ps: 虽然我知道，大部分人和作者菌一样喜欢白嫖，都是看了�
 <dependency>
     <groupId>io.github.lxwise</groupId>
     <artifactId>fx-updater</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 </dependency>
 ```
 
@@ -66,7 +66,7 @@ ps: 虽然我知道，大部分人和作者菌一样喜欢白嫖，都是看了�
 
 ```Groovy
 dependencies {
-    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0.2'
+    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0.3'
 }
 ```
 
@@ -110,16 +110,17 @@ app.update.configUrl = http://192.168.12.50:81/downloads/app-update-config.json
 
 ```json
 {
-    "name": "UpdateTest-FX",
+    "name": "UpdateTest-FX App",
     "licenses": "http://192.168.12.50:81/downloads/LICENSE",
-    "changelog": "http://192.168.12.50:81/downloads/changelog.txt",
-	"Icon":null,
+    "changelog": "http://192.168.12.50:81/downloads/changelog.html",
+    "icon":"http://192.168.12.50:81/downloads/fx-updater.png",
     "releases": [
       {
         "id": "20000",
         "version": "2.0.0",
         "releaseDate": "2024-03-07",
         "licenseVersion": "1",
+        "officialDownloadAddress": "https://www.lstar.icu/",
         "installationFileInfo": [
           {
             "downloadLink": "http://192.168.12.50:81/downloads/UpdateTest-FX-2.0.0.exe",
@@ -143,6 +144,7 @@ app.update.configUrl = http://192.168.12.50:81/downloads/app-update-config.json
         "version": "1.0.0",
         "releaseDate": "2024-01-05",
         "licenseVersion": "1",
+        "officialDownloadAddress": "https://www.lstar.icu/",
         "installationFileInfo": [
           {
             "downloadLink": "http://192.168.12.50:81/downloads/UpdateTest-FX-1.0.0.exe",
@@ -172,12 +174,13 @@ app.update.configUrl = http://192.168.12.50:81/downloads/app-update-config.json
 - `name`: 应用名称。
 - `licenses`:  许可证,可为空。
 - `changelog`:  更新日志。
-- `Icon`:  应用图标,可为空,为空时使用默认应用图标。
+- `icon`:  应用图标,可为空,为空时使用默认应用图标。
 - `releases`: 发布信息。
     - `id` 版本id,用于确定是否有更新的版本。
     - `version` 当前应用程序版本。
     - `releaseDate` 是发布日期,必须使用标准格式。
     - `licenseVersion` 许可证的版本。
+    - `officialDownloadAddress` 手动下载地址/官网地址。用于自动下载失败后的兜底下载。
     - `installationFileInfo`  安装文件信息,一个发布版本中可包含多个平台的安装文件。
         - `downloadLink`  安装文件下载地址
         - `fileSize` 文件大小,字节为单位
@@ -185,7 +188,7 @@ app.update.configUrl = http://192.168.12.50:81/downloads/app-update-config.json
 
 #### 3.3 更新日志文件
 
-版本更新时伴随着改动说明，新建一个`changelog.txt`文件,这里为了优雅的展示使用的是html文件。
+版本更新时伴随着改动说明，新建一个`changelog.txt`文件。
 
 `changelog.txt`配置如下：
 
@@ -256,6 +259,7 @@ SOFTWARE.
 
     # 下载目录
 	location /downloads/ {
+	#如果使用其他目录请改为 alias /opt/myapp/app_updates/;
 		root /var/www/app_updates/;
 		autoindex on;
 		add_header Cache-Control "public, max-age=31536000, immutable";

@@ -33,6 +33,10 @@ public class ReleaseInfoModel {
      */
     private AppInfoModel appInfo;
     /**
+     * 手动下载地址/官网地址
+     */
+    private String officialDownloadAddress;
+    /**
      * 安装包信息
      */
     private List<InstallationFileInfoModel> installationFileInfo;
@@ -83,5 +87,13 @@ public class ReleaseInfoModel {
 
     public void setInstallationFileInfo(List<InstallationFileInfoModel> installationFileInfo) {
         this.installationFileInfo = installationFileInfo;
+    }
+
+    public String getOfficialDownloadAddress() {
+        return officialDownloadAddress;
+    }
+
+    public void setOfficialDownloadAddress(String officialDownloadAddress) {
+        this.officialDownloadAddress = officialDownloadAddress;
     }
 }

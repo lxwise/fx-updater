@@ -62,7 +62,7 @@ You can use Maven to [download](https://repo1.maven.org/maven2/io/github/lxwise/
 <dependency>
     <groupId>io.github.lxwise</groupId>
     <artifactId>fx-updater</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
 </dependency>
 ```
 
@@ -70,7 +70,7 @@ You can use Maven to [download](https://repo1.maven.org/maven2/io/github/lxwise/
 
 ```Groovy
 dependencies {
-    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0.3'
+    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0.4'
 }
 ```
 

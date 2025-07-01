@@ -58,7 +58,7 @@ ps: 虽然我知道，大部分人和作者菌一样喜欢白嫖，都是看了�
 <dependency>
     <groupId>io.github.lxwise</groupId>
     <artifactId>fx-updater</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
 </dependency>
 ```
 
@@ -66,7 +66,7 @@ ps: 虽然我知道，大部分人和作者菌一样喜欢白嫖，都是看了�
 
 ```Groovy
 dependencies {
-    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0.3'
+    implementation group: 'io.github.lxwise', name: 'fx-updater', version: '1.0.4'
 }
 ```
 

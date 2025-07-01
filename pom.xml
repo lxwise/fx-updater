@@ -4,7 +4,7 @@
 
     <groupId>io.github.lxwise</groupId>
     <artifactId>fx-updater</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <packaging>jar</packaging>
     <description>Automatic update launcher for JavaFX applications.</description>
     <name>fx-updater</name>

@@ -83,7 +83,16 @@ updater.checkAppUpdate();
 
 ```java
 FXUpdater updater = updater = new FXUpdater(new URL("http://localhost:8080/updater/updateConfig.json"), "1.0.0", 1, 1, new URL("http://localhost:8080/updater/themeCssUrl.css"));
+//默认不带回调函数和自动关闭
 updater.checkAppUpdate();
+//带回调函数和不带自动关闭
+updater.checkAppUpdate(() -> {
+        System.out.println("更新提示关闭或完成后执行回调");
+            });
+//带回调函数和带自动关闭
+updater.checkAppUpdate(() -> {
+        System.out.println("窗口关闭，执行自动回调");
+            }, 5);
 ```
 
 ### 3.配置版本文件

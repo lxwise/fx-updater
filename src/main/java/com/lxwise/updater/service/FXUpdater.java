@@ -124,25 +124,53 @@ public class FXUpdater {
 
     /**
      * 开始检查更新并提示用户安装任务。
+     * 默认不带回调和定时关闭
      */
     public void checkAppUpdate() {
+        checkAppUpdate(null, -1);
+    }
+
+    /**
+     * 带回调的开始检查更新并提示用户安装任务。
+     * @param callback 带回调
+     */
+    public void checkAppUpdate(Runnable callback) {
+        checkAppUpdate(callback, -1);
+    }
+    /**
+     * 带回调的开始检查更新并提示用户安装任务。
+     * @param autoCloseSeconds 不带回调,带自动关闭
+     */
+    public void checkAppUpdate(int autoCloseSeconds) {
+        checkAppUpdate(null, autoCloseSeconds);
+    }
+
+    /**
+     * 支持回调 + 自动关闭时间的方法（单位：秒，<=0 表示不自动关闭）
+     * @param callback
+     * @param autoCloseSeconds
+     */
+    public void checkAppUpdate(Runnable callback, int autoCloseSeconds) {
         try {
             AcquireUpdateConfigService acquireService = new AcquireUpdateConfigService(new URL(getUpdateConfigUrl()));
             acquireService.valueProperty().addListener((observable, oldValue, application) -> {
                 CheckUpdateService updateService = new CheckUpdateService(application, getReleaseId(), getLicenseVersion());
                 updateService.valueProperty().addListener((obs, oldVal, release) -> {
-                    Platform.runLater(() ->
-                            UpdaterDialogController.showUpdateDialog(
-                                    release, getReleaseId(), getVersion(), getLicenseVersion(), getThemeCssUrl()
-                            )
-                    );
+                    Platform.runLater(() -> {
+                        UpdaterDialogController.showUpdateDialog(
+                                release, getReleaseId(), getVersion(), getLicenseVersion(), getThemeCssUrl(),
+                                callback, autoCloseSeconds
+                        );
+                    });
                 });
                 updateService.start();
             });
             acquireService.start();
         } catch (Exception e) {
             e.printStackTrace();
-            // 可加日志或弹窗提示
+            // 可添加日志记录
         }
     }
+
+
 }

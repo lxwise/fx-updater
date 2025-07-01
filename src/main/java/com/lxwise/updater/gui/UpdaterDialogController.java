@@ -1,6 +1,7 @@
 package com.lxwise.updater.gui;
 
 import com.lxwise.updater.model.ReleaseInfoModel;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -11,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,27 +45,40 @@ public class UpdaterDialogController {
     private String currentVersion;
     private Integer currentLicenseVersion;
     private String themeCssUrl;
+    private Runnable callback; // 回调函数
 
     /**
      * 显示更新弹窗
-     * @param release
-     * @param releaseId
-     * @param version
-     * @param licenseVersion
-     * @param themeCssUrl
+     * @param release 发布版本信息
+     * @param releaseId 当前内部版本
+     * @param version 当前版本
+     * @param licenseVersion 当前授权版本
+     * @param themeCssUrl 主题样式
+     * @param callback 回调方法
+     * @param autoCloseSeconds 弹窗自动关闭时间
      */
-    public static void showUpdateDialog(ReleaseInfoModel release, Integer releaseId, String version, int licenseVersion, String themeCssUrl) {
+    public static void showUpdateDialog(
+            ReleaseInfoModel release,
+            Integer releaseId,
+            String version,
+            int licenseVersion,
+            String themeCssUrl,
+            Runnable callback,
+            int autoCloseSeconds
+    ) {
         try {
             ResourceBundle i18nBundle = ResourceBundle.getBundle("com.lxwise.updater.i18n.updater");
             FXMLLoader loader = new FXMLLoader(UpdaterDialogController.class.getResource("UpdaterDialog.fxml"), i18nBundle);
             loader.setBuilderFactory(new JavaFXBuilderFactory());
             Parent page = loader.load();
             UpdaterDialogController controller = loader.getController();
+
             controller.release = release;
             controller.currentReleaseId = releaseId;
             controller.currentVersion = version;
             controller.currentLicenseVersion = licenseVersion;
             controller.themeCssUrl = themeCssUrl;
+            controller.callback = callback;
             controller.initialize();
 
             Scene scene = new Scene(page);
@@ -73,16 +88,33 @@ public class UpdaterDialogController {
 
             final Stage stage = new Stage();
             stage.setScene(scene);
-            stage.setTitle(release.getAppInfo().getName()+i18nBundle.getString("infotext.title"));
+            stage.setTitle(release.getAppInfo().getName() + i18nBundle.getString("infotext.title"));
+
             String iconStr = release.getAppInfo().getIcon();
             if (iconStr != null && !iconStr.isBlank()) {
                 stage.getIcons().add(new Image(iconStr));
             } else {
                 stage.getIcons().add(new Image("images/fx-updater-logo.png"));
             }
+
+            stage.setAlwaysOnTop(true);
             stage.show();
             stage.toFront();
 
+            // 自动关闭逻辑
+            if (autoCloseSeconds > 0) {
+                PauseTransition pause = new PauseTransition(Duration.seconds(autoCloseSeconds));
+                pause.setOnFinished(event -> {
+                    if (stage.isShowing()) {
+                        stage.close();
+                        if (callback != null) callback.run();
+                    }
+                });
+                pause.play();
+            }
+
+
+            // 关闭请求逻辑
             stage.setOnCloseRequest(event -> {
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                 alert.setTitle(i18nBundle.getString("infotext.title"));
@@ -92,11 +124,13 @@ public class UpdaterDialogController {
                 ButtonType ok = new ButtonType(i18nBundle.getString("button.ok"), ButtonBar.ButtonData.OK_DONE);
                 ButtonType cancel = new ButtonType(i18nBundle.getString("button.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
                 alert.getButtonTypes().setAll(ok, cancel);
+                alert.initOwner(stage);
 
-                alert.initOwner(stage); // 确保在当前窗口上弹出
                 alert.showAndWait().ifPresent(response -> {
                     if (response == cancel) {
-                        event.consume(); // 取消关闭
+                        event.consume();
+                    } else {
+                        if (callback != null) callback.run();
                     }
                 });
             });
@@ -105,6 +139,7 @@ public class UpdaterDialogController {
             ex.printStackTrace();
         }
     }
+
 
     private void initialize() {
 
@@ -150,8 +185,13 @@ public class UpdaterDialogController {
     }
 
     private void close() {
-        ((Stage) versionInfoLabel.getScene().getWindow()).close();
+        Stage stage = (Stage) versionInfoLabel.getScene().getWindow();
+        stage.close();
+        if (callback != null) {
+            callback.run();
+        }
     }
+
     @FXML
     public void ignoreVersionAction(ActionEvent actionEvent) {
         close();

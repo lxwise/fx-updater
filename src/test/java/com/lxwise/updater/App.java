@@ -46,7 +46,16 @@ public class App extends Application {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            updater.checkAppUpdate();
+//            updater.checkAppUpdate();
+//            updater.checkAppUpdate(() -> {
+//                System.out.println("更新提示关闭或完成后执行回调");
+//            });
+//
+            updater.checkAppUpdate(() -> {
+                System.out.println("窗口关闭，执行自动回调");
+            }, 5);
+
+
         });
         ap.getChildren().addAll(label,button);
         Scene scene = new Scene(ap);

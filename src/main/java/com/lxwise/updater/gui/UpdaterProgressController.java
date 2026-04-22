@@ -3,6 +3,7 @@ package com.lxwise.updater.gui;
 import com.lxwise.updater.model.ReleaseInfoModel;
 import com.lxwise.updater.service.ExecuteInstallerService;
 import com.lxwise.updater.service.InstallFileDownloadService;
+import com.lxwise.updater.utils.UpdateLogger;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -11,18 +12,16 @@ import javafx.fxml.JavaFXBuilderFactory;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.Objects;
 import java.util.ResourceBundle;
 
 /**
  * @author lxwise
  * @create 2024-05
  * @description: 更新进度条控制器
- * @version: 1.0
+ * @version: 2.0
  * @email: lstart980@gmail.com
  */
 public class UpdaterProgressController {
@@ -57,12 +56,14 @@ public class UpdaterProgressController {
 
         // 下载完成后，设置安装按钮和信息
         downloadService.setOnSucceeded((event) -> Platform.runLater(() -> {
+            UpdateLogger.info("Download completed successfully");
             setupInstallButton();
             updateInfoLabel.setText(resources.getString("label.downloaded"));
         }));
 
         // 下载失败后，显示错误信息
         downloadService.setOnFailed((event) -> Platform.runLater(() -> {
+            UpdateLogger.error("Download failed", downloadService.getException());
             setupCancelButton();
             updateInfoLabel.setText(resources.getString("label.downloadFailed"));
         }));
@@ -91,6 +92,8 @@ public class UpdaterProgressController {
     // 执行更新过程
     public static void performUpdate(ReleaseInfoModel release, String themeCssUrl) {
         try {
+            UpdateLogger.info("Opening progress window for update");
+
             ResourceBundle i18nBundle = ResourceBundle.getBundle("com.lxwise.updater.i18n.updater");
 
             FXMLLoader loader = new FXMLLoader(UpdaterProgressController.class.getResource("UpdaterProgress.fxml"), i18nBundle);
@@ -107,72 +110,24 @@ public class UpdaterProgressController {
 
             Stage stage = new Stage();
             stage.setScene(scene);
-            stage.setTitle(release.getAppInfo().getName()+i18nBundle.getString("infotext.title"));
-            setStageIcon(release, stage);
+            stage.setTitle(GuiUtils.buildStageTitle(release, i18nBundle));
+            GuiUtils.setStageIcon(release, stage);
             stage.show();
             stage.setResizable(false);
             stage.toFront();
-            stage.setOnCloseRequest(event -> {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle(i18nBundle.getString("infotext.title"));
-                alert.setHeaderText(null);
-                alert.setContentText(i18nBundle.getString("alert.confirm.exit"));
-
-                ButtonType ok = new ButtonType(i18nBundle.getString("button.ok"), ButtonBar.ButtonData.OK_DONE);
-                ButtonType cancel = new ButtonType(i18nBundle.getString("button.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-                alert.getButtonTypes().setAll(ok, cancel);
-
-                alert.initOwner(stage); // 确保在当前窗口上弹出
-                alert.showAndWait().ifPresent(response -> {
-                    if (response == cancel) {
-                        event.consume(); // 取消关闭
-                    }
-                });
-            });
-
-
+            GuiUtils.setupCloseConfirmation(stage, i18nBundle, null);
 
         } catch (Throwable ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    // 设置窗口图标
-    private static void setStageIcon(ReleaseInfoModel release, Stage stage) {
-        String iconStr = release.getAppInfo().getIcon();
-        if (iconStr != null && !iconStr.isBlank()) {
-            stage.getIcons().add(new Image(iconStr));
-        } else {
-            stage.getIcons().add(new Image("images/fx-updater-logo.png"));
+            UpdateLogger.error("Failed to show progress window", ex);
         }
     }
 
     // 更新进度标签
     private void updateProgressLabel() {
         MessageFormat mf = new MessageFormat(resources.getString("label.progress"), resources.getLocale());
-        Object[] params = {formatFileSize(downloadService.getWorkDone()), formatFileSize(downloadService.getTotalWork())};
-
+        Object[] params = {GuiUtils.formatFileSize(downloadService.getWorkDone()), GuiUtils.formatFileSize(downloadService.getTotalWork())};
         updateProgressLabel.setText(mf.format(params));
     }
-
-    // 字节转化可读的格式
-    private String formatFileSize(double fileSizeInBytes) {
-        final double BYTE_UNIT = 1024.0; // 单位为 1024 字节
-
-        // 如果文件大小小于 1 KB，直接返回字节数
-        if (fileSizeInBytes < BYTE_UNIT) {
-            return String.format("%.0f B", fileSizeInBytes); // 返回以字节为单位的大小
-        }
-
-        // 计算文件大小对应的单位级别 (kB, MB, GB 等)
-        int unitIndex = (int) (Math.log(fileSizeInBytes) / Math.log(BYTE_UNIT));
-        char unitPrefix = "kMGTPE".charAt(unitIndex - 1); // 获取单位前缀 (K, M, G 等)
-
-        // 计算转换后的文件大小，并格式化结果
-        double convertedSize = fileSizeInBytes / Math.pow(BYTE_UNIT, unitIndex);
-        return String.format("%.1f %sB", convertedSize, unitPrefix);
-    }
-
 
     // 关闭窗口
     public void close() {
@@ -181,7 +136,7 @@ public class UpdaterProgressController {
 
     @FXML
     public void executeAction(ActionEvent actionEvent) {
-
+        UpdateLogger.info("User cancelled download");
         downloadService.cancel();
         close();
     }
@@ -193,9 +148,11 @@ public class UpdaterProgressController {
         updateProgressLabel.setText("");
         updateInfoLabel.setText(resources.getString("label.installing"));
 
+        UpdateLogger.info("Starting installation: %s", downloadService.getValue());
         ExecuteInstallerService installService = new ExecuteInstallerService(downloadService.getValue());
 
         installService.setOnFailed((evt) -> Platform.runLater(() -> {
+            UpdateLogger.error("Installation failed", installService.getException());
             actionButton.setDisable(false);
             setupCancelButton();
             updateProgressBar.setProgress(1.0);
@@ -212,12 +169,11 @@ public class UpdaterProgressController {
             if (address != null && !address.isBlank()) {
                 URL downloadUrl = new URL(address);
                 java.awt.Desktop.getDesktop().browse(downloadUrl.toURI());
+                UpdateLogger.info("Opening manual download URL: %s", address);
             }
             close();
         } catch (Exception e) {
-            e.printStackTrace();
-
+            UpdateLogger.error("Failed to open manual download URL", e);
         }
     }
-
 }

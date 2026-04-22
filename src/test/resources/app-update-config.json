@@ -1,47 +1,21 @@
 {
   "name": "UpdateTest-FX App",
-  "licenses": "http://192.168.12.50:81/downloads/LICENSE",
-  "changelog": "http://192.168.12.50:81/downloads/changelog.html",
-  "icon":"http://192.168.12.50:81/downloads/fx-updater.png",
-  "releases": [
-    {
-      "id": "20000",
-      "version": "2.0.0",
-      "releaseDate": "2024-03-07",
-      "licenseVersion": "2",
-      "officialDownloadAddress": "https://www.lstar.icu/",
-      "installationFileInfo": [
-        {
-          "downloadLink": "http://192.168.12.50:81/downloads/UpdateTest-FX-2.0.0.exe",
-          "fileSize": 97677,
-          "platform": "win_x64"
-        },
-        {
-          "downloadLink": "http://192.168.12.50:81/downloads/UpdateTest-FX-1.0.0.dmg",
-          "fileSize": 97677,
-          "platform": "mac"
-        }
-      ]
+  "version": "2.0.0",
+  "changelog": "版本 2.0.0 更新内容：\n- 新增 macOS 平台支持\n- 提升性能并修复已知问题\n- 更新用户界面，提升易用性",
+  "icon": "http://192.168.12.50:81/downloads/fx-updater.png",
+  "downloadUrl": "https://www.lstar.icu/",
+  "platforms": {
+    "win_x64": {
+      "url": "http://192.168.12.50:81/downloads/UpdateTest-FX-2.0.0.exe",
+      "size": 97677
     },
-    {
-      "id": "10000",
-      "version": "1.0.0",
-      "releaseDate": "2024-01-05",
-      "licenseVersion": "1",
-      "officialDownloadAddress": "https://www.lstar.icu/",
-      "installationFileInfo": [
-        {
-          "downloadLink": "http://192.168.12.50:81/downloads/UpdateTest-FX-2.0.0.exe",
-          "fileSize": 63995,
-          "platform": "win_x64"
-        },
-        {
-          "downloadLink": "http://192.168.12.50:81/downloads/UpdateTest-FX-1.0.0.dmg",
-          "fileSize": 63995,
-          "platform": "mac"
-        }
-      ]
+    "mac": {
+      "url": "http://192.168.12.50:81/downloads/UpdateTest-FX-2.0.0.dmg",
+      "size": 97677
+    },
+    "linux": {
+      "url": "http://192.168.12.50:81/downloads/UpdateTest-FX-2.0.0.deb",
+      "size": 97677
     }
-  ]
+  }
 }
-

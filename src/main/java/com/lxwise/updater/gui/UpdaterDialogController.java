@@ -1,8 +1,10 @@
 package com.lxwise.updater.gui;
 
 import com.lxwise.updater.model.ReleaseInfoModel;
+import com.lxwise.updater.utils.UpdateLogger;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -10,7 +12,6 @@ import javafx.fxml.JavaFXBuilderFactory;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -21,14 +22,13 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.Objects;
 import java.util.ResourceBundle;
 
 /**
  * @author lxwise
  * @create 2024-05
  * @description: 更新弹窗控制器
- * @version: 1.0
+ * @version: 2.0
  * @email: lstart980@gmail.com
  */
 public class UpdaterDialogController {
@@ -67,6 +67,8 @@ public class UpdaterDialogController {
             int autoCloseSeconds
     ) {
         try {
+            UpdateLogger.info("Showing update dialog for version %s", release.getVersion());
+
             ResourceBundle i18nBundle = ResourceBundle.getBundle("com.lxwise.updater.i18n.updater");
             FXMLLoader loader = new FXMLLoader(UpdaterDialogController.class.getResource("UpdaterDialog.fxml"), i18nBundle);
             loader.setBuilderFactory(new JavaFXBuilderFactory());
@@ -88,14 +90,8 @@ public class UpdaterDialogController {
 
             final Stage stage = new Stage();
             stage.setScene(scene);
-            stage.setTitle(release.getAppInfo().getName() + i18nBundle.getString("infotext.title"));
-
-            String iconStr = release.getAppInfo().getIcon();
-            if (iconStr != null && !iconStr.isBlank()) {
-                stage.getIcons().add(new Image(iconStr));
-            } else {
-                stage.getIcons().add(new Image("images/fx-updater-logo.png"));
-            }
+            stage.setTitle(GuiUtils.buildStageTitle(release, i18nBundle));
+            GuiUtils.setStageIcon(release, stage);
 
             stage.setAlwaysOnTop(true);
             stage.show();
@@ -106,6 +102,7 @@ public class UpdaterDialogController {
                 PauseTransition pause = new PauseTransition(Duration.seconds(autoCloseSeconds));
                 pause.setOnFinished(event -> {
                     if (stage.isShowing()) {
+                        UpdateLogger.info("Auto-closing update dialog after %d seconds", autoCloseSeconds);
                         stage.close();
                         if (callback != null) callback.run();
                     }
@@ -113,39 +110,18 @@ public class UpdaterDialogController {
                 pause.play();
             }
 
-
             // 关闭请求逻辑
-            stage.setOnCloseRequest(event -> {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle(i18nBundle.getString("infotext.title"));
-                alert.setHeaderText(null);
-                alert.setContentText(i18nBundle.getString("alert.confirm.exit"));
-
-                ButtonType ok = new ButtonType(i18nBundle.getString("button.ok"), ButtonBar.ButtonData.OK_DONE);
-                ButtonType cancel = new ButtonType(i18nBundle.getString("button.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-                alert.getButtonTypes().setAll(ok, cancel);
-                alert.initOwner(stage);
-
-                alert.showAndWait().ifPresent(response -> {
-                    if (response == cancel) {
-                        event.consume();
-                    } else {
-                        if (callback != null) callback.run();
-                    }
-                });
-            });
+            GuiUtils.setupCloseConfirmation(stage, i18nBundle, callback);
 
         } catch (Throwable ex) {
-            ex.printStackTrace();
+            UpdateLogger.error("Failed to show update dialog", ex);
         }
     }
 
 
     private void initialize() {
-
         String changelog = release.getAppInfo().getChangelog();
         if (changelog != null && !changelog.isBlank()) {
-            // 异步加载线上内容并设置到现有的 TextArea
             loadContentIntoTextArea(changelog);
         } else {
             textArea.setVisible(false);
@@ -161,27 +137,35 @@ public class UpdaterDialogController {
     }
 
     /**
-     * 异步加载线上内容并设置到现有的
-     * @param url
+     * 异步加载线上内容并设置到现有的 TextArea，使用 JavaFX Task 代替裸线程
+     * @param url 内容URL
      */
     private void loadContentIntoTextArea(String url) {
-        // 使用后台线程读取线上内容，避免阻塞 UI
-        new Thread(() -> {
-            try (InputStream inputStream = new URL(url).openStream();
-                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-
-                StringBuilder content = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    content.append(line).append("\n");
+        Task<String> loadTask = new Task<>() {
+            @Override
+            protected String call() throws Exception {
+                try (InputStream inputStream = new URL(url).openStream();
+                     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+                    StringBuilder content = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        content.append(line).append("\n");
+                    }
+                    return content.toString();
                 }
-
-                // 更新 UI 必须在 JavaFX 应用线程中完成
-                Platform.runLater(() -> textArea.setText(content.toString()));
-            } catch (IOException e) {
-                Platform.runLater(() -> textArea.setText("Failed to load content from the URL: " + e.getMessage()));
             }
-        }).start();
+        };
+
+        loadTask.setOnSucceeded(event -> textArea.setText(loadTask.getValue()));
+        loadTask.setOnFailed(event -> {
+            Throwable ex = loadTask.getException();
+            UpdateLogger.error("Failed to load changelog", ex);
+            textArea.setText("Failed to load content from the URL: " + (ex != null ? ex.getMessage() : "unknown error"));
+        });
+
+        Thread thread = new Thread(loadTask);
+        thread.setDaemon(true);
+        thread.start();
     }
 
     private void close() {
@@ -194,16 +178,19 @@ public class UpdaterDialogController {
 
     @FXML
     public void ignoreVersionAction(ActionEvent actionEvent) {
+        UpdateLogger.info("User chose to ignore this version");
         close();
     }
 
     @FXML
     public void cancelAction(ActionEvent actionEvent) {
+        UpdateLogger.info("User chose to remind later");
         close();
     }
 
     @FXML
     public void executeUpdateAction(ActionEvent actionEvent) {
+        UpdateLogger.info("User chose to update now");
         UpdaterProgressController.performUpdate(release, themeCssUrl);
         close();
     }

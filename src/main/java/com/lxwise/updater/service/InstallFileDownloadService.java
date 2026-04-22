@@ -3,6 +3,8 @@ package com.lxwise.updater.service;
 import com.lxwise.updater.model.EPlatformModel;
 import com.lxwise.updater.model.InstallationFileInfoModel;
 import com.lxwise.updater.model.ReleaseInfoModel;
+import com.lxwise.updater.utils.HttpUtils;
+import com.lxwise.updater.utils.UpdateLogger;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import java.io.BufferedInputStream;
@@ -19,15 +21,19 @@ import java.util.Objects;
 /**
  * @author lxwise
  * @create 2024-05
- * @description: 安装文件下载服务类,负责根据当前平台下载指定安装包到本地
- * @version: 1.0
+ * @description: 安装文件下载服务类,负责根据当前平台下载指定安装包到本地，支持断点续传和重试
+ * @version: 2.0
  * @email: lstart980@gmail.com
  */
 public class InstallFileDownloadService extends Service<Path> {
 
     private final ReleaseInfoModel releaseInfoModel;
+    private int maxRetries = 3;
+    private int connectTimeout = 15000;
+    private int readTimeout = 60000;
+
     /**
-     * 构造函数，接收ReleaseInfoModel对象
+     * 构造函数，接收ReleaseInfoModel对象（向后兼容）
      *
      * @param releaseInfoModel 包含发布信息的模型
      */
@@ -36,6 +42,21 @@ public class InstallFileDownloadService extends Service<Path> {
             throw new IllegalArgumentException("download fails, please try again");
         }
         this.releaseInfoModel = releaseInfoModel;
+    }
+
+    /**
+     * 构造函数（增强版），支持配置重试和超时
+     *
+     * @param releaseInfoModel 包含发布信息的模型
+     * @param maxRetries 最大重试次数
+     * @param connectTimeout 连接超时（毫秒）
+     * @param readTimeout 读取超时（毫秒）
+     */
+    public InstallFileDownloadService(ReleaseInfoModel releaseInfoModel, int maxRetries, int connectTimeout, int readTimeout) {
+        this(releaseInfoModel);
+        this.maxRetries = Math.max(1, maxRetries);
+        this.connectTimeout = connectTimeout;
+        this.readTimeout = readTimeout;
     }
 
     @Override
@@ -51,12 +72,24 @@ public class InstallFileDownloadService extends Service<Path> {
                         .findFirst()
                         .orElseThrow(() -> new IllegalArgumentException("Failed to download the installation package, and there is no installation package that supports the system"));
 
-
-                // 获取下载链接并建立连接
+                // 获取下载链接
                 String downloadLinkStr = needDownloadFile.getDownloadLink();
-                URL downloadUrl = new URL(downloadLinkStr); // 需要时再转换
+                URL downloadUrl = new URL(downloadLinkStr);
 
-                URLConnection connection = downloadUrl.openConnection();
+                UpdateLogger.info("Starting download from: %s", downloadLinkStr);
+
+                // 使用重试机制执行下载
+                return HttpUtils.executeWithRetry(attempt -> {
+                    UpdateLogger.info("Download attempt %d/%d", attempt, maxRetries);
+                    return doDownload(downloadUrl, needDownloadFile);
+                }, maxRetries);
+            }
+
+            /**
+             * 执行实际的下载逻辑，支持断点续传
+             */
+            private Path doDownload(URL downloadUrl, InstallationFileInfoModel needDownloadFile) throws Exception {
+                URLConnection connection = HttpUtils.openConnection(downloadUrl, connectTimeout, readTimeout);
                 connection.connect();
 
                 // 获取文件大小
@@ -71,21 +104,53 @@ public class InstallFileDownloadService extends Service<Path> {
                 String fileName = extractFileName(connection, needDownloadFile);
                 Path downloadFile = Paths.get(System.getProperty("java.io.tmpdir"), fileName);
 
+                // 检查是否可以断点续传
+                long existingSize = 0;
+                if (Files.exists(downloadFile)) {
+                    existingSize = Files.size(downloadFile);
+                    // 如果已下载的文件大小与目标一致，直接返回
+                    if (existingSize == fileSize && fileSize > 0) {
+                        UpdateLogger.info("File already downloaded: %s", downloadFile);
+                        updateProgress(fileSize, fileSize);
+                        return downloadFile;
+                    }
+                    // 尝试断点续传
+                    if (existingSize > 0 && existingSize < fileSize && HttpUtils.supportsResume(connection)) {
+                        HttpUtils.disconnect(connection);
+                        connection = HttpUtils.openRangeConnection(downloadUrl, existingSize, connectTimeout, readTimeout);
+                        connection.connect();
+                        UpdateLogger.info("Resuming download from byte %d", existingSize);
+                    } else {
+                        existingSize = 0; // 不支持续传，从头开始
+                    }
+                }
+
                 // 开始下载文件
-                try (OutputStream fos = Files.newOutputStream(downloadFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+                StandardOpenOption[] openOptions = existingSize > 0
+                        ? new StandardOpenOption[]{StandardOpenOption.APPEND}
+                        : new StandardOpenOption[]{StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE};
+
+                try (OutputStream fos = Files.newOutputStream(downloadFile, openOptions);
                      BufferedInputStream is = new BufferedInputStream(connection.getInputStream())) {
 
-                    byte[] buffer = new byte[8192];
+                    byte[] buffer = new byte[16384]; // 增大缓冲区提升性能
                     int bytesRead;
-                    long totalDownloaded = 0;
+                    long totalDownloaded = existingSize;
 
                     while ((bytesRead = is.read(buffer)) != -1) {
+                        if (isCancelled()) {
+                            UpdateLogger.info("Download cancelled by user");
+                            return downloadFile;
+                        }
                         fos.write(buffer, 0, bytesRead);
                         totalDownloaded += bytesRead;
                         updateProgress(totalDownloaded, fileSize);
                     }
+                } finally {
+                    HttpUtils.disconnect(connection);
                 }
 
+                UpdateLogger.info("Download completed: %s (size: %d bytes)", downloadFile, Files.size(downloadFile));
                 return downloadFile;
             }
         };

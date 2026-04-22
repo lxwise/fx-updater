@@ -16,9 +16,9 @@
     <Label fx:id="updateProgressLabel" alignment="CENTER_RIGHT" prefWidth="350.0"/>
     <!-- 按钮区域 -->
     <HBox spacing="10.0" alignment="CENTER_RIGHT">
-        <Button fx:id="actionButton" cancelButton="true" mnemonicParsing="false" onAction="#executeAction"
-                text="%button.cancel"/>
         <Button fx:id="manualDownloadButton" mnemonicParsing="false" onAction="#manualDownload"
                 text="%button.manual.download" visible="false"/>
+        <Button fx:id="actionButton" cancelButton="true" mnemonicParsing="false" onAction="#executeAction"
+                text="%button.cancel"/>
     </HBox>
 </VBox>

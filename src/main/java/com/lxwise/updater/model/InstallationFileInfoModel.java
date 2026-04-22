@@ -22,6 +22,10 @@ public class InstallationFileInfoModel {
      * 平台
      */
     private String platform;
+    /**
+     * 文件校验和（SHA-256），用于验证下载文件完整性
+     */
+    private String checksum;
 
     public String getDownloadLink() {
         return downloadLink;
@@ -45,5 +49,13 @@ public class InstallationFileInfoModel {
 
     public void setPlatform(String platform) {
         this.platform = platform;
+    }
+
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
     }
 }
